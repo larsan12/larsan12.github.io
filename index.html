@@ -1,53 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<meta charset="utf-8">
-<head>
-<script src="http://d3js.org/d3.v3.min.js"></script>
-  <style type="text/css">
-    rect {
-        fill:teal;
-        fill-opacity:.8;
-    }
-  </style>
-</head>
-<body>
-  <script type="text/javascript">
- 
-    var margin = {top: 50, bottom: 10, left:300, right: 40};
-    var width = 900 - margin.left - margin.right;
-    var height = 900 - margin.top - margin.bottom;
- 
-    var xScale = d3.scale.linear().range([0, width]);
-    var yScale = d3.scale.ordinal().rangeRoundBands([0, height], .8, 0);
- 
-    var svg = d3.select("body").append("svg")
-                .attr("width", width+margin.left+margin.right)
-                .attr("height", height+margin.top+margin.bottom);
- 
-    var g = svg.append("g")
-                .attr("transform", "translate("+margin.left+","+margin.top+")");
- 
-    d3.json("countries_2012.json", function(data) {
- 
-        var max = d3.max(data, function(d) { return d.population; } );
-        var min = 0;
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript">
+        var data
 
-        xScale.domain([min, max]);
-        yScale.domain(data.map(function(d) { return d.name; }));
- 
-        var groups = g.append("g")
-                    .selectAll("text")
-                    .data(data)
-                  .enter()
-                    .append("g");
- 
-        var bars = groups
-                    .append("rect")
-                    .attr("width", function(d) { return xScale(d.population); })
-                    .attr("height", 5)
-                    .attr("x", xScale(min))
-                    .attr("y", function(d) { return yScale(d.name); })
-    });
-  </script>
-</body>
+        function draw(data) {
+            var ignored = ["alpha2_code", "latitude", "longitude", "total_export_value", "total_import_value"]
+            data.map(row => {
+                ignored.forEach(w => delete row[w])
+            })
+            var columns = Object.keys(data[0]);
+
+            var table = d3.select("body").append("table"),
+            thead = table.append("thead")
+            .attr("class", "thead");
+            tbody = table.append("tbody");
+
+            table.append("caption")
+            .html("World Countries Ranking");
+
+            thead.append("tr").selectAll("th")
+            .data(columns)
+            .enter()
+            .append("th")
+            .text(function(d) { return d; })
+            .on("click", function(header, i) {
+                tbody.selectAll("tr").sort(function(a, b) {
+                    if (a[header] == b[header]) {
+                        return d3.descending(a["name"], b["name"]);
+                    } else {
+                        return d3.descending(a[header], b[header]);
+                    }
+                });
+            });
+
+            //formatt
+            var lifeFormat = d3.format(",.1f");
+            var defaultFormat = d3.format(",")
+            var gdpFormat = d3.format(",.")
+
+            var rows = tbody.selectAll("tr.row")
+            .data(data)
+            .enter()
+            .append("tr").attr("class", "row")
+
+            var cells = rows.selectAll("td")
+            .data(function(row) {
+                return d3.range(Object.keys(row).length).map(function(column, i) {
+                    if (Object.keys(row)[i] == "life_expectancy") {
+                        return lifeFormat(row[Object.keys(row)[i]])
+                    } else if (Object.keys(row)[i] == "gdp") {
+                        return gdpFormat(Math.ceil(row[Object.keys(row)[i]]))
+                    } else  if (Object.keys(row)[i] == "population") {
+                        return defaultFormat(row[Object.keys(row)[i]])
+                    } else {
+                        return row[Object.keys(row)[i]];
+                    }
+                });
+            })
+            .enter()
+            .append("td")
+            .text(function(d) { return d; })
+            .on("mouseover", function(d, i) {
+
+                d3.select(this.parentNode)
+                .style("background-color", "#F3ED86");
+
+            }).on("mouseout", function() {
+
+                tbody.selectAll("tr")
+                .style("background-color", null)
+                .selectAll("td")
+                .style("background-color", null);
+
+            });
+
+
+            tbody.selectAll("tr")
+            .each(function(d, i) {
+                debugger;
+                if (i % 2 == 0) {
+                    d3.select(d).style("background-color", "blue")
+                }
+            })
+
+
+        }
+
+        function loadData() {
+            var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
+            var xhr = new XHR();
+            // (2) запрос на другой домен :)
+
+            xhr.open('GET', 'https://larsan12.github.io/countries_2012.json', true);
+
+            xhr.onload = function() {
+                data = JSON.parse(this.responseText);
+                draw(data);
+            }
+            xhr.onerror = function() {
+              alert( 'Ошибка ' + this.status );
+            }
+            xhr.send();
+        }
+        loadData();
+
+
+
+    </script>
+  </head>
+  <body>
+
+  </body>
 </html>
