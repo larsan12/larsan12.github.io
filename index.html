@@ -5,10 +5,50 @@
     <style></style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript">
-        var data
+        var data, changeInput, dataSelected
+
+        var inputs = ["Americas", "Africa", "Asia", "Europe", "Oceania"]
 
         function draw(data) {
+            drawInputs()
+            drawTable(data)
+        }
+
+        function drawInputs() {
+            var div = d3.select("body").append("div").attr("class", "inputs");
+            inputs.forEach(input => {
+                let lable = div.append("label").text(() => input)
+                lable.append("input")
+                    .attr("type","checkbox")
+                    .attr("title",input)
+                    .attr("value",input)
+                    .attr("name",input)
+                    .attr("onchange", "changeInput()")
+            })
+
+            changeInput = () => {
+                let names = []
+                d3.selectAll("input").each(function(d) {
+                    // Current name of the checkbox is d3.select(this).attr("name")
+                    if (d3.select(this).property("checked")) {
+                        names.push(d3.select(this).attr("name"))
+                    }
+                })
+                dataSelected = data.filter(row => names.indexOf(row.continent) != -1)
+                dropTable()
+                drawTable(dataSelected)
+            }
+
+        }
+
+        function dropTable() {
+            d3.select("table").remove()
+        }
+
+        function drawTable(data) {
+
             var ignored = ["alpha2_code", "latitude", "longitude", "total_export_value", "total_import_value"]
+
             data.map(row => {
                 ignored.forEach(w => delete row[w])
             })
@@ -35,6 +75,7 @@
                         return d3.descending(a[header], b[header]);
                     }
                 });
+                acceptZebra()
             });
 
             let currentValue = "white";
@@ -78,14 +119,19 @@
 
             });
 
+            //zebra pattern accept
+            function acceptZebra() {
+                tbody.selectAll("tr")
+                .each(function(d, i) {
+                    if (i % 2 == 0) {
+                        d3.select(this).style("background-color", "#99ccff")
+                    } else {
+                        d3.select(this).style("background-color", "white")
+                    }
+                })
+            }
 
-            tbody.selectAll("tr")
-            .each(function(d, i) {
-                if (i % 2 == 0) {
-                    d3.select(this).style("background-color", "#99ccff")
-                }
-            })
-
+            acceptZebra()
 
         }
 
