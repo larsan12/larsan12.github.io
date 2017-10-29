@@ -37,6 +37,8 @@
                 });
             });
 
+            let currentValue = "white";
+
             //formatt
             var lifeFormat = d3.format(",.1f");
             var defaultFormat = d3.format(",")
@@ -66,24 +68,21 @@
             .text(function(d) { return d; })
             .on("mouseover", function(d, i) {
 
-                d3.select(this.parentNode)
-                .style("background-color", "#F3ED86");
+                let row = d3.select(this.parentNode)
+                currentValue = row.style("background-color")
+                row.style("background-color", "#F3ED86");
 
             }).on("mouseout", function() {
 
-                tbody.selectAll("tr")
-                .style("background-color", null)
-                .selectAll("td")
-                .style("background-color", null);
+                d3.select(this.parentNode).style("background-color", currentValue);
 
             });
 
 
             tbody.selectAll("tr")
             .each(function(d, i) {
-                debugger;
                 if (i % 2 == 0) {
-                    d3.select(d).style("background-color", "blue")
+                    d3.select(this).style("background-color", "#99ccff")
                 }
             })
 
