@@ -5,40 +5,119 @@
     <style></style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript">
-        var data, changeInput, dataSelected
+        var data, changeInput, dataSelected, changeRadio
 
-        var inputs = ["Americas", "Africa", "Asia", "Europe", "Oceania"]
+        var inputs = ["Americas", "Africa", "Asia", "Europe", "Oceania"];
+
+        // for Aggregations
+        var agregation = ["none", "continent"];
+        var folded_fields = ["population", "gdp"];
+        var average_fields = ["life_expectancy"];
+        var constant_fields = ["year"];
 
         function draw(data) {
             drawInputs()
+            drawRadio()
             drawTable(data)
         }
 
         function drawInputs() {
-            var div = d3.select("body").append("div").attr("class", "inputs");
+            var div = d3.select("body").append("div").attr("class", "inputs").text(() => "Filter by: ");
             inputs.forEach(input => {
-                let lable = div.append("label").text(() => input)
+                let lable = div.append("label").text(() => input+ ": ")
                 lable.append("input")
                     .attr("type","checkbox")
                     .attr("title",input)
                     .attr("value",input)
                     .attr("name",input)
-                    .attr("onchange", "changeInput()")
+                    .attr("onchange", "changeInput()");
             })
 
             changeInput = () => {
-                let names = []
-                d3.selectAll("input").each(function(d) {
+                clearRadio();
+                let names = [];
+                d3.select("div.inputs").selectAll("input").each(function(d) {
                     // Current name of the checkbox is d3.select(this).attr("name")
                     if (d3.select(this).property("checked")) {
                         names.push(d3.select(this).attr("name"))
                     }
                 })
+
+                if (names.length == 0)
+                    names = inputs;
                 dataSelected = data.filter(row => names.indexOf(row.continent) != -1)
                 dropTable()
                 drawTable(dataSelected)
             }
 
+        }
+
+        function clearInputs() {
+            d3.select("div.inputs").selectAll("input").each(function(d) {
+                d3.select(this).property("checked", false)
+            })
+        }
+
+        function drawRadio() {
+            var div = d3.select("body").append("div").attr("class", "radio").text(() => "Aggregation: ");
+
+            agregation.forEach(agr => {
+                let lable = div.append("label").text(() => agr+ ": ")
+                lable.append("input")
+                    .attr("type","radio")
+                    .attr("value", agr)
+                    .attr("name", "Aggregation")
+                    .attr("onchange", "changeRadio()");
+            })
+
+            changeRadio = () => {
+                clearInputs();
+                let property = "";
+
+                d3.select("div.radio").selectAll("input").each(d => {
+                    //TODO
+                    let asdf = d3.select(this).property("checked");
+                    debugger;
+                    if (d3.select(this).property("checked")) {
+                        property = d3.select(this).attr("value")
+                    }
+                })
+
+                if (property == "none") {
+                    dropTable()
+                    drawTable(data)
+                } else {
+                    var aggregation = d3.nest()
+                      .key(d => d[property])
+                      .rollup(rows => {
+                          let group = {}
+                          Object.keys(rows[0]).forEach(prop => {
+                              if (folded_fields.indexOf(prop) != -1) {
+                                  group[prop] = d3.mean(rows, r => r[prop])
+                              } else if (average_fields.indexOf(prop) != -1) {
+                                  group[prop] = d3.mean(rows, r => r[prop] * r["population"])/d3.mean(rows, r => r["population"])
+                              } else if (constant_fields.indexOf(prop) != -1) {
+                                  group[prop] = rows[0][prop]
+                              } else {
+                                  group[prop] = rows[0][property]
+                              }
+                          })
+                          return group
+                      })
+                      .entries(data)
+                      .map(obj => obj.values)
+
+                      dropTable()
+                      drawTable(aggregation)
+              }
+
+            }
+        }
+
+        function clearRadio() {
+            d3.select("div.radio").selectAll("input").each(function(d) {
+                d3.select(this).property("checked", false)
+            })
         }
 
         function dropTable() {
