@@ -2,12 +2,21 @@
   <head>
     <title></title>
     <meta content="">
-    <style></style>
+    <style>
+        label {
+            margin-right: 30px;
+            margin-left: 10px;
+        }
+        div {
+            border: 1px dotted black;
+        }
+    </style>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript">
-        var data, changeInput, dataSelected, changeRadio
+        var data, fullData, changeInput, dataSelected, changeRadio
 
         var inputs = ["Americas", "Africa", "Asia", "Europe", "Oceania"];
+        var ignoredFields = ["alpha2_code", "latitude", "longitude", "total_export_value", "total_import_value", "years", "top_partners"]
 
         // for Aggregations
         var agregation = ["none", "continent"];
@@ -15,14 +24,18 @@
         var average_fields = ["life_expectancy"];
         var constant_fields = ["year"];
 
+
+
         function draw(data) {
+            d3.select("body").append("div").attr("class", "conditions")
             drawInputs()
             drawRadio()
             drawTable(data)
         }
 
+        //FILTERS
         function drawInputs() {
-            var div = d3.select("body").append("div").attr("class", "inputs").text(() => "Filter by: ");
+            var div = d3.select("div.conditions").append("div").attr("class", "inputs").text(() => "Filter by: ");
             inputs.forEach(input => {
                 let lable = div.append("label").text(() => input+ ": ")
                 lable.append("input")
@@ -58,8 +71,40 @@
             })
         }
 
+
+        //SLIDER
+        let drawSlider = () => d3.select("div.conditions")
+        .append("div")
+        .attr("class", "slider")
+        .append("label")
+        .text(d => "Time update: ")
+        .append("input")
+        .attr("type", "range")
+        .attr("class", "points")
+        .attr("min", 1995)
+        .attr("max", 2012)
+        .attr("step", 1)
+        .attr("value", 2012)
+        .attr("oninput", "changeYear()")
+
+        function changeYear() {
+            let value = d3.select("input.points").property("value");
+            filteredData = fullData.map(country => ({
+                ...country,
+                years: undefined,
+                ...country.years.find(year => year.year == value),
+                top_partners: undefined
+            }))
+            data = filteredData;
+            dropTable()
+            drawTable(data)
+        }
+
+
+        //AGGREGATOR
+
         function drawRadio() {
-            var div = d3.select("body").append("div").attr("class", "radio").text(() => "Aggregation: ");
+            var div = d3.select("div.conditions").append("div").attr("class", "radio").text(() => "Aggregation: ");
 
             agregation.forEach(agr => {
                 let lable = div.append("label").text(() => agr+ ": ")
@@ -71,19 +116,15 @@
             })
 
             changeRadio = () => {
-                clearInputs();
                 let property = "";
 
-                d3.select("div.radio").selectAll("input").each(d => {
-                    //TODO
-                    let asdf = d3.select(this).property("checked");
-                    debugger;
+                d3.select("div.radio").selectAll("input").each(function(d) {
                     if (d3.select(this).property("checked")) {
                         property = d3.select(this).attr("value")
                     }
                 })
 
-                if (property == "none") {
+                if (property == "none" || !property) {
                     dropTable()
                     drawTable(data)
                 } else {
@@ -111,6 +152,8 @@
                       drawTable(aggregation)
               }
 
+              clearInputs();
+
             }
         }
 
@@ -120,16 +163,15 @@
             })
         }
 
+
+        //TABLE
         function dropTable() {
             d3.select("table").remove()
         }
 
         function drawTable(data) {
-
-            var ignored = ["alpha2_code", "latitude", "longitude", "total_export_value", "total_import_value"]
-
             data.map(row => {
-                ignored.forEach(w => delete row[w])
+                ignoredFields.forEach(w => delete row[w])
             })
             var columns = Object.keys(data[0]);
 
@@ -214,24 +256,31 @@
 
         }
 
-        function loadData() {
+        //DATA HANDLER
+
+        loadData = (str) => new Promise ((resolve, reject) => {
             var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
             var xhr = new XHR();
-            // (2) запрос на другой домен :)
-
-            xhr.open('GET', 'https://larsan12.github.io/countries_2012.json', true);
+            xhr.open('GET', str, true);
 
             xhr.onload = function() {
-                data = JSON.parse(this.responseText);
-                draw(data);
+                resolve(JSON.parse(this.responseText))
             }
             xhr.onerror = function() {
-              alert( 'Ошибка ' + this.status );
+              reject(this.status)
             }
             xhr.send();
-        }
-        loadData();
+        })
 
+        loadData("https://larsan12.github.io/countries_2012.json").then(data => {
+            data = data
+            draw(data)
+        })
+
+        loadData("https://larsan12.github.io/countries_1995_2012.json").then(data => {
+            fullData = data
+            drawSlider()
+        })
 
 
     </script>
