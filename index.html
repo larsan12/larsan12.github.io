@@ -10,10 +10,13 @@
         div {
             border: 1px dotted black;
         }
+        .conditions {
+            width: 900px;
+        }
     </style>
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript">
-        var data, fullData, changeInput, dataSelected, changeRadio
+        var data, fullData, changeInput, dataSelected, changeRadio, changeProp
 
         var inputs = ["Americas", "Africa", "Asia", "Europe", "Oceania"];
         var ignoredFields = ["alpha2_code", "latitude", "longitude", "total_export_value", "total_import_value", "years", "top_partners"]
@@ -24,12 +27,16 @@
         var average_fields = ["life_expectancy"];
         var constant_fields = ["year"];
 
+        // property for display char diagram
+        var encodeProp = "population";
+
 
 
         function draw(data) {
             d3.select("body").append("div").attr("class", "conditions")
             drawInputs()
             drawRadio()
+            drawChooseProp();
             drawTable(data)
         }
 
@@ -66,6 +73,7 @@
         }
 
         function clearInputs() {
+            dataSelected = data;
             d3.select("div.inputs").selectAll("input").each(function(d) {
                 d3.select(this).property("checked", false)
             })
@@ -96,8 +104,10 @@
                 top_partners: undefined
             }))
             data = filteredData;
+            dataSelected = data.filter(country => dataSelected.find(d => d.name == country.name));
             dropTable()
-            drawTable(data)
+            drawTable(dataSelected)
+            changeRadio()
         }
 
 
@@ -126,8 +136,9 @@
 
                 if (property == "none" || !property) {
                     dropTable()
-                    drawTable(data)
+                    drawTable(dataSelected)
                 } else {
+                    clearInputs();
                     var aggregation = d3.nest()
                       .key(d => d[property])
                       .rollup(rows => {
@@ -152,8 +163,6 @@
                       drawTable(aggregation)
               }
 
-              clearInputs();
-
             }
         }
 
@@ -165,6 +174,7 @@
 
 
         //TABLE
+        /*
         function dropTable() {
             d3.select("table").remove()
         }
@@ -255,6 +265,122 @@
             acceptZebra()
 
         }
+        */
+
+        //Draw bar chart
+
+        function drawChooseProp() {
+            let encodeProps = ["population", "gdp"];
+            let div = d3.select("body").append("div")
+                .attr("class", "prop");
+
+            encodeProps.forEach(prop =>{
+                let labl = div.append("label").text(() => prop + ": ")
+                    .append("input")
+                    .attr("type","radio")
+                    .attr("value", prop)
+                    .attr("name", "prop")
+                    .attr("onchange", "changeProp()");
+                if (prop == encodeProp) {
+                    d3.select(labl).property("checked", true)
+                }
+            })
+
+            changeProp = () => {
+                let property = "";
+
+                d3.select("div.prop").selectAll("input").each(function(d) {
+                    if (d3.select(this).property("checked")) {
+                        property = d3.select(this).attr("value")
+                    }
+                })
+
+                if (property) {
+                    encodeProp = property
+                    clearRadio();
+                    clearInputs();
+                    dropTable();
+                    drawTable(data)
+              }
+
+            }
+        }
+
+        function dropTable() {
+            d3.select("svg").remove()
+        }
+
+        function drawTable(data) {
+            data.map(row => {
+                ignoredFields.forEach(w => delete row[w])
+            })
+
+            var margin = {top: 50, bottom: 10, left:300, right: 40};
+            var width = 900 - margin.left - margin.right;
+            var height = data.length > 8 ? data.length * 20 : data.length * 40 - margin.top - margin.bottom;
+
+            var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var x = d3.scale.linear()
+                .range([0, width])
+                .domain([0, d3.max(data, function (d) {
+                    return d[encodeProp];
+                })]);
+
+            var y = d3.scale.ordinal()
+                .rangeRoundBands([0, height], .1)
+                .domain(data.map(function (d) {
+                    return d.name;
+                }));
+
+            //make y axis to show bar names
+            var yAxis = d3.svg.axis()
+                .scale(y)
+                //no tick marks
+                .tickSize(0)
+                .orient("left");
+
+            var gy = svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis)
+
+            var bars = svg.selectAll(".bar")
+                .data(data)
+                .enter()
+                .append("g")
+
+            //append rects
+            bars.append("rect")
+                .attr("class", "bar")
+                .attr("y", function (d) {
+                    return y(d.name);
+                })
+                .attr("height", y.rangeBand())
+                .attr("x", 0)
+                .attr("width", function (d) {
+                    return x(d[encodeProp]);
+                });
+
+            //add a value label to the right of each bar
+            bars.append("text")
+                .attr("class", "label")
+                //y position of the label is halfway down the bar
+                .attr("y", function (d) {
+                    return y(d.name) + y.rangeBand() / 2 + 4;
+                })
+                //x position is 3 pixels to the right of the bar
+                .attr("x", function (d) {
+                    return x(d[encodeProp]) + 3;
+                })
+                .text(function (d) {
+                    return d[encodeProp];
+                });
+        }
+
 
         //DATA HANDLER
 
@@ -272,13 +398,16 @@
             xhr.send();
         })
 
-        loadData("https://larsan12.github.io/countries_2012.json").then(data => {
-            data = data
+        loadData("https://larsan12.github.io/countries_1995_2012.json").then(d => {
+            fullData = d
+            data = fullData.map(country => ({
+                ...country,
+                years: undefined,
+                ...country.years.find(year => year.year == 2012),
+                top_partners: undefined
+            }))
+            dataSelected = data;
             draw(data)
-        })
-
-        loadData("https://larsan12.github.io/countries_1995_2012.json").then(data => {
-            fullData = data
             drawSlider()
         })
 
