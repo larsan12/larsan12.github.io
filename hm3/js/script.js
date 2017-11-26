@@ -47,4 +47,16 @@ function chooseData() {
     // Changed the selected data when a user selects a different
     // menu item from the drop down.
 
+    //delete previous data
+    d3.select("#xAxis").remove();
+    d3.select("#yAxis").remove();
+    d3.select("#bars").remove();
+    d3.select("#barChart").append("g")
+        .attr("id", "xAxis");
+    d3.select("#barChart").append("g")
+        .attr("id", "yAxis");
+    d3.select("#barChart").append("g")
+        .attr("id", "bars");
+    //draw barChart
+    window.barChart.updateBarChart(d3.select("#dataset").property("value"))
 }
