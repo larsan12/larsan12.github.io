@@ -22,6 +22,50 @@ class InfoPanel {
 
         //Set Labels
 
+        d3.select("#details")
+            .select("#edition")
+            .selectAll("p")
+            .remove();
+        d3.select("#details")
+            .select("#host")
+            .selectAll("p")
+            .remove();
+        d3.select("#details")
+            .select("#host")
+            .selectAll("p")
+            .remove();
+        d3.select("#details")
+            .select("#winner")
+            .selectAll("p")
+            .remove();
+        d3.select("#details")
+            .select("#silver")
+            .selectAll("p")
+            .remove();
+        d3.select("#details")
+            .select("#runner_up")
+            .selectAll("ul")
+            .remove();
+        d3.select("#details")
+            .select("#teams")
+            .remove();
+
+        d3.select("#details").select("#edition")
+            .append("p").html(oneWorldCup["EDITION"]);
+        d3.select("#details").select("#host")
+            .append("p").html(oneWorldCup["host"]);
+        d3.select("#details").select("#winner")
+            .append("p").html(oneWorldCup["winner"]);
+        d3.select("#details").select("#silver")
+            .append("p").html(oneWorldCup["runner_up"]);
+
+
+        let list = d3.select("#details").select("#teams").append("ul");
+        oneWorldCup["teams_names"].forEach(function() {
+            debugger;
+            list.append("li").html(name);
+        })
+
     }
 
 }

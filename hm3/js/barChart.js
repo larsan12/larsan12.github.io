@@ -100,6 +100,29 @@ class BarChart {
         // Call the necessary update functions for when a user clicks on a bar.
         // Note: think about what you want to update when a different bar is selected.
 
+
+        let prevBar;
+        let prevColor;
+
+        let toggleBarColor = function() {
+            let selectedBar = d3.select(this);
+            selectedBar.style("fill", "#EF7E6C");
+
+            if (prevBar != selectedBar && prevBar) {
+                prevBar.style("fill", prevColor)
+            }
+            prevBar = selectedBar;
+
+            let data = selectedBar.data()[0];
+            prevColor = getColor(data);
+            window.barChart.infoPanel.updateInfo(data);
+            window.barChart.worldMap.updateMap(data);
+        }
+
+
+        bars.selectAll("rect")
+            .on("click", toggleBarColor)
+
     }
 
     /**
