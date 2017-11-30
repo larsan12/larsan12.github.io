@@ -48,6 +48,7 @@ class InfoPanel {
             .remove();
         d3.select("#details")
             .select("#teams")
+            .selectAll("ul")
             .remove();
 
         d3.select("#details").select("#edition")
@@ -59,11 +60,9 @@ class InfoPanel {
         d3.select("#details").select("#silver")
             .append("p").html(oneWorldCup["runner_up"]);
 
-
         let list = d3.select("#details").select("#teams").append("ul");
-        oneWorldCup["teams_names"].forEach(function() {
-            debugger;
-            list.append("li").html(name);
+        oneWorldCup["teams_names"].forEach(function(name) {
+            list.append("li").text(name);
         })
 
     }

@@ -131,10 +131,5 @@ class BarChart {
      *  There are 4 attributes that can be selected:
      *  goals, matches, attendance and teams.
      */
-    chooseData() {
-        // ******* TODO: PART I *******
-        //Changed the selected data when a user selects a different
-        // menu item from the drop down.
 
-    }
 }

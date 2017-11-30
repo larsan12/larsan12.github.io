@@ -13,6 +13,10 @@
     fill: #fee8c8;
 }
 
+.barGroup {
+    cursor: pointer;
+}
+
 .team-html {
     background-color: #fee8c8;
 }
@@ -38,11 +42,16 @@
     fill: #d20a11;
 }
 
+path {
+    z-index: 10;
+}
+
 /*Map grid style*/
 .grat {
     stroke: grey;
     stroke-width: 1px;
     opacity: .2;
+    z-index: 1;
 }
 
 @font-face {

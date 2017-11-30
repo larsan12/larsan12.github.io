@@ -5,7 +5,6 @@ class Map {
      */
     constructor() {
         this.projection = d3.geoConicConformal().scale(150).translate([400, 350]);
-
     }
 
     /**
@@ -20,6 +19,17 @@ class Map {
         // Hint: If you followed our suggestion of using classes to style
         // the colors and markers for hosts/teams/winners, you can use
         // d3 selection and .classed to set these classes on and off here.
+        d3.select("#map").selectAll(".team, .host")
+            .each(function(d) {
+                d3.select(this).attr("class", "countries");
+            })
+            
+        d3.select("#points").selectAll(".gold")
+            .remove();
+
+        d3.select("#points").selectAll(".silver")
+            .remove();
+
 
     }
 
@@ -49,7 +59,31 @@ class Map {
 
 
         // Add a marker for gold/silver medalists
-    }
+
+        this.world.features.filter(row => worldcupData.teams_iso.includes(row["id"]))
+            .forEach(c => d3.select("#" + c.id).attr("class", "team"));
+
+        this.world.features.filter(row => row["id"] == worldcupData.host_country_code)
+            .forEach(c => d3.select("#" + c.id).attr("class", "host"));
+
+        var projection = this.projection;
+
+        d3.select("#points").selectAll(".gold")
+            .data([worldcupData.win_pos]).enter()
+            .append("circle")
+            .attr("class", "gold")
+            .attr("cx", d => projection(d)[0])
+            .attr("cy", d => projection(d)[1])
+            .attr("r", "8px");
+
+        d3.select("#points").selectAll(".silver")
+            .data([worldcupData.ru_pos]).enter()
+            .append("circle")
+            .attr("class", "silver")
+            .attr("cx", d => projection(d)[0])
+            .attr("cy", d => projection(d)[1])
+            .attr("r", "8px");
+        }
 
     /**
      * Renders the actual map
@@ -70,6 +104,34 @@ class Map {
 
         // Make sure and give your paths the appropriate class (see the .css selectors at
         // the top of the provided html file)
+
+        var transition = d3.transition();
+        var projection = this.projection;
+        this.path = d3.geoPath().projection(projection);
+
+
+        this.world = topojson.feature(world, world.objects.countries);
+        var countries_features = this.world.features
+
+        d3.select("#map").selectAll(".countries")
+            .data(countries_features)
+            .enter()
+            .append("path")
+            .attr("id", d => d.id)
+            .attr("class", "countries")
+            .attr("d", this.path)
+
+        const graticule = d3.geoGraticule()
+            .step([10, 10]);
+
+        d3.select("#map").selectAll(".grat")
+            .data([graticule()])
+            .enter()
+            .append('path')
+            .attr("class", "grat")
+            .attr('d', this.path)
+            .attr("fill", "none")
+            .exit().remove();
 
     }
 
