@@ -1,5 +1,5 @@
     /**
-     * Loads in the table information from fifa-matches.json 
+     * Loads in the table information from fifa-matches.json
      */
 d3.json('data/fifa-matches.json',function(error,data){
 
@@ -20,7 +20,7 @@ d3.json('data/fifa-matches.json',function(error,data){
 
         //Create Table Object and pass in reference to tree object (for hover linking)
         let table = new Table(data,tree);
-
+        window.table = table;
         table.createTable();
         table.updateTable();
     });

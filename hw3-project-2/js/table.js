@@ -13,7 +13,7 @@ class Table {
         this.tableElements = teamData.slice();; //
 
         ///** Store all match data for the 2014 Fifa cup */
-        this.teamData = null;
+        this.teamData = teamData;
 
         //Default values for the Table Headers
         this.tableHeaders = ["Delta Goals", "Result", "Wins", "Losses", "TotalGames"];
@@ -34,10 +34,20 @@ class Table {
         this.goalsConcededHeader = 'Goals Conceded';
 
         /** Setup the scales*/
-        this.goalScale = null;
+        this.goalScale = {
+            height: 25,
+            marginRight: 10,
+            marginLeft: 10,
+            width: 170
+        };
 
         /** Used for games/wins/losses*/
-        this.gameScale = null;
+        this.gameScale = {
+            height: this.goalScale.height,
+            marginRight: 10,
+            marginLeft: 0,
+            width: 70
+        };
 
         /**Color scales*/
         /**For aggregate columns  Use colors '#ece2f0', '#016450' for the range.*/
@@ -62,27 +72,24 @@ class Table {
          // Create the x axes for the goalScale.
 
          //add GoalAxis to header of col 1.
-         this.goalScaleMargin = {right: 10, left: 10}
-         this.goalScaleWidth = 190 - this.goalScaleMargin.left - this.goalScaleMargin.right,
-         this.goalScaleHeight = 30
 
          this.maxGoals = Math.max(...this.tableElements.map(e => e.value["Goals Made"]), ...this.tableElements.map(e => e.value["Goals Conceded"]));
 
          var goalAxisSvg = d3.select("#goalHeader")
              .append("svg")
-             .attr("width", this.goalScaleWidth + this.goalScaleMargin.left + this.goalScaleMargin.right)
-             .attr("height", this.goalScaleHeight)
+             .attr("width", this.goalScale.width + this.goalScale.marginLeft + this.goalScale.marginRight)
+             .attr("height", this.goalScale.height)
 
          goalAxisSvg
              .append("line")
-             .attr("x1", this.goalScaleMargin.left)
+             .attr("x1", this.goalScale.marginLeft)
              .attr("y1", 20)
-             .attr("x2", this.goalScaleWidth + this.goalScaleMargin.left)
+             .attr("x2", this.goalScale.width + this.goalScale.marginLeft)
              .attr("y2", 20)
              .attr("stroke", "black")
 
          for (var i = 0; i <= this.maxGoals / 2; i++) {
-             var x = this.goalScaleMargin.left + i * this.goalScaleWidth * 2 / this.maxGoals;
+             var x = this.goalScale.marginLeft + i * this.goalScale.width * 2 / this.maxGoals;
              goalAxisSvg
                  .append("line")
                  .attr("x1", x)
@@ -167,37 +174,12 @@ class Table {
         })
 
         rows.exit().remove();
+
+
         table = this;
 
-        let onClick = function (d, i, el) {
-            if (!d) {
-                return
-            }
-            let idx = data.findIndex(val => val.key == d.key);
-
-            if (data[idx + 1].value.type == "game" && data[idx].value.type != "game") {
-                var j = idx + 1
-                while (data[j].value.type == "game" && j < data.length ) {
-                    ++j
-                }
-                data.splice(idx + 1, j - (idx + 1))
-
-                table.updateTable()
-                return
-            }
-
-            for (var j in d.value.games) {
-                var el = Object.assign({}, d.value.games[j])
-                el.key = "x" + el.key
-                data.splice(++idx, 0, el);
-            }
-
-            table.updateTable()
-        };
-
-
        d3.selectAll("tr")
-           .on("click", onClick);
+           .on("click", this.onClick);
 
         //Add scores as title property to appear on hover
 
@@ -207,30 +189,150 @@ class Table {
 
         //Set the color of all games that tied to light gray
 
+        let goals = d3.selectAll("#Goals")
+            .append("svg")
+            .attr("id", 1)
+            .attr("width", this.goalScale.width + this.goalScale.marginLeft + this.goalScale.marginRight)
+            .attr("height", 20)
+
+        let scaleLength = value => this.goalScale.marginLeft + value * this.goalScale.width / this.maxGoals;
+
+        goals.append("line")
+            .attr("x1", d => scaleLength(d.value["Made"]))
+            .attr("y1", 10)
+            .attr("x2", d => scaleLength(d.value["Conceded"]))
+            .attr("y2", 10)
+            .attr("stroke", function (d) {
+                let parent = d3.select(this.parentNode)
+                let cellClass = d3.select(parent.node().parentNode).attr("class")
+                if (cellClass == "game") {
+                    return "red"
+                }
+                return d.value["Made"] > d.value["Conceded"] ? "blue" : "red"
+            })
+            .attr("stroke-width", function(d) {
+                let parent = d3.select(this.parentNode);
+                let cellClass = d3.select(parent.node().parentNode).attr("class");
+                if (cellClass == "aggregate") {
+                    return 10;
+                }
+                return 5;
+            })
+            .attr("opacity", 0.6);
+
+        //opened circle
+        goals.append("circle")
+            .attr("cx", d => scaleLength(d.value["Conceded"]))
+            .attr("cy", 10)
+            .attr("class", function (d, i, el) {
+                let parent = d3.select(this.parentNode);
+                let cellClass = d3.select(parent.node().parentNode).attr("class");
+
+                if (cellClass == "game") {
+                    if (d.value["Made"] != d.value["Conceded"]) {
+                        return "bagelRed"
+                    }
+                    return "bagelGray"
+                };
+
+                if (d.value["Made"] != d.value["Conceded"]) {
+                    return "circleRed"
+                };
+
+                return "circleGray";
+            });
+
+        //closed circle
+        goals.append("circle")
+            .attr("cx", d => scaleLength(d.value["Made"]))
+            .attr("cy", 10)
+            .attr("r", 5)
+            .attr("class", function (d, i, el) {
+                let parent = d3.select(this.parentNode)
+                let cellClass = d3.select(parent.node().parentNode).attr("class")
+
+                if (cellClass == "game") {
+                    if (d.value["Made"] != d.value["Conceded"]) {
+                        return "circleBlue"
+                    }
+                    return "bagelGray"
+                };
+
+                if (d.value["Made"] != d.value["Conceded"]) {
+                    return "circleBlue"
+                };
+
+                return "circleGray"
+            });
+
+        ["Wins", "Losses", "TotalGames"].forEach(key => {
+            let maxValue = Math.max(...this.tableElements.filter(val => val.value[key] && val.value[key] != []).map(val => val.value[key]));
+
+            let getLength = value => {
+                if (!value || value == []) {
+                    return 0;
+                }
+                return this.gameScale.marginLeft + value * this.gameScale.width / maxValue;
+            };
+
+            let barsSvg = d3.selectAll("#" + key)
+                .append("svg")
+                .attr("width", this.gameScale.width + this.gameScale.marginLeft + this.gameScale.marginRight)
+                .attr("height", 20);
+
+            barsSvg
+                .append("line")
+                .attr("x1", this.gameScale.marginLefts)
+                .attr("y1", 10)
+                .attr("x2", d => {
+                    if (d.value == []) {
+                        return 0
+                    }
+                    return getLength(d.value)
+                })
+                .attr("y2", 10)
+                .attr("stroke","#006666")
+                .attr("stroke-width", 20)
+                .attr("opacity", d => d.value / maxValue);
+
+            barsSvg
+                .append("text")
+                .text( d => d.value)
+                .attr("fill", "white")
+                .attr("x", function(d) {
+                    var width = this.getComputedTextLength();
+                    return getLength(d.value) - 5 - width / 2;
+                })
+                .attr("y", 16);
+        })
 
     };
 
+    onClick(d, i, el) {
+        if (!d) {
+            return
+        }
+        let data = window.table.tableElements;
+        let index = data.findIndex(val => val.key == d.key);
 
-    /**
-     * Updates the global tableElements variable, with a row for each row to be rendered in the table.
-     *
-     */
-    updateList(i) {
-        // ******* TODO: PART IV *******
+        if (data[index + 1].value.type == "game" && data[index].value.type != "game") {
+            var j = index + 1
+            while (data[j].value.type == "game" && j < data.length ) {
+                ++j
+            }
+            data.splice(index + 1, j - (index + 1))
 
-        //Only update list for aggregate clicks, not game clicks
+            window.table.updateTable()
+            return
+        }
 
-    }
+        for (var j in d.value.games) {
+            var el = Object.assign({}, d.value.games[j])
+            el.key = "x" + el.key
+            data.splice(++index, 0, el);
+        }
 
-    /**
-     * Collapses all expanded countries, leaving only rows for aggregate values per country.
-     *
-     */
-    collapseList() {
-
-        // ******* TODO: PART IV *******
-
-    }
-
+        window.table.updateTable()
+    };
 
 }

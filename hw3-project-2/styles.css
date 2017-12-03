@@ -1,3 +1,42 @@
+.circleBlue{
+    stroke-width: 3px;
+    fill: blue;
+    r:5;
+}
+
+.circleRed{
+    stroke-width: 3px;
+    fill: red;
+    r:5;
+}
+
+.circleGray{
+    stroke-width: 3px;
+    fill: gray;
+    r:5;
+}
+
+.bagelBlue{
+    stroke-width: 3px;
+    stroke: blue;
+    fill: white;
+    r:5;
+}
+
+.bagelRed{
+    stroke-width: 3px;
+    stroke: red;
+    fill: white;
+    r:5;
+}
+
+.bagelGray{
+    stroke-width: 3px;
+    stroke: gray;
+    fill: white;
+    r:5;
+}
+
 
 table {
     border-collapse: collapse;
@@ -151,5 +190,3 @@ header {
     padding: 0.5em;
     float: left;
 }
-
-
