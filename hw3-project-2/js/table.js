@@ -117,6 +117,60 @@ class Table {
         // Clicking on headers should also trigger collapseList() and updateTable().
 
 
+        d3.selectAll("th").each(function (d) {
+            d3.select(this)
+                .on("click", function(d, i, a) {
+                    let table = window.table;
+                    table.collapseList()
+                    let header = d3.select(this).text().trim();
+                    let sortAsc = table.sortAsc || false;
+                    let sortedField = table.sortedField || "Team";
+
+                    if (sortedField == header) {
+                        sortAsc = !sortAsc;
+                    }
+
+                    let getValue = (row, key) => {
+                        let val = "";
+                        switch (key) {
+                            case "Team":
+                                val = row.key;
+                                break;
+                            case "Wins":
+                            case "Losses":
+                                val = row.value[key];
+                                break;
+                            case "Total Games":
+                                val = row.value["TotalGames"];
+                                break;
+                            case "Goals":
+                                val = row.value["Delta Goals"];
+                                break;
+                            case "Round/Result":
+                                val = row.value["Result"]["ranking"];
+                                break;
+                        }
+                        return val;
+                    }
+                    table.tableElements.sort(function(a, b) {
+                        let v1 = getValue(a, header);
+                        let v2 = getValue(b, header);
+                        switch (typeof v1) {
+                            case "string":
+                                return sortAsc ? v1.localeCompare(v2) : v2.localeCompare(v1);
+                                break;
+                            default:
+                                return sortAsc ? v1 - v2 : v2 - v1;
+                        }
+                    })
+
+                    table.sortedField = header;
+                    table.sortAsc = sortAsc;
+
+                    table.updateTable()
+                })
+            })
+
     }
 
 
@@ -334,5 +388,24 @@ class Table {
 
         window.table.updateTable()
     };
+
+
+    collapseList() {
+
+        // ******* TODO: PART IV *******
+        let i = 0
+        while (i < this.tableElements.length) {
+            if (this.tableElements[i].value.type == "game") {
+                let j = i
+                while (this.tableElements[j].value.type == "game" && j < this.tableElements.length ) {
+                    ++j
+                }
+                this.tableElements.splice(i, j - i)
+            }
+            ++i
+        }
+        this.updateTable()
+
+    }
 
 }
