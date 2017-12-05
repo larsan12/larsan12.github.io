@@ -159,7 +159,7 @@ header {
     font: 14px sans-serif;
 }
 
-.winner circle {
+circle.winner {
     fill: #364e74;
 }
 
@@ -186,7 +186,7 @@ header {
 }
 
 .view {
-    width: 650px;
+    width: auto;
     padding: 0.5em;
     float: left;
 }
