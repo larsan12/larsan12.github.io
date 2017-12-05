@@ -48,7 +48,6 @@ th {
     font-weight: normal;
     text-align: right;
     padding-right: 6px;
-    min-width: 125px;
 }
 
 thead td , th{
@@ -177,6 +176,7 @@ circle.winner {
 .selected {
     stroke: #be2714;
     stroke-width: 4px;
+    fill: none;
 }
 
 .selectedLabel {
@@ -188,5 +188,9 @@ circle.winner {
 .view {
     width: auto;
     padding: 0.5em;
+    float: left;
+}
+
+td svg {
     float: left;
 }

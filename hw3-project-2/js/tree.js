@@ -5,7 +5,7 @@ class Tree {
      */
     constructor() {
         this.margin = {top: 20, right: 90, bottom: 30, left: 90};
-        this.width = 600 - this.margin.left - this.margin.right;
+        this.width = 500 - this.margin.left - this.margin.right;
         this.height = 700 - this.margin.top - this.margin.bottom;
     }
 
@@ -72,6 +72,7 @@ class Tree {
             .data( nodes.descendants().slice(1))
           .enter().append("path")
             .attr("class", "link")
+            .attr("id", d => d.data.data.Team)
             .attr("d", function(d) {
                return "M" + d.y + "," + d.x
                  + "C" + (d.y + d.parent.y) / 2 + "," + d.x
@@ -99,6 +100,7 @@ class Tree {
         node.append("text")
           .attr("dy", ".35em")
           .attr("x", function(d) { return d.children ? -13 : 13; })
+          .attr("id", d => d.data.data.Team)
           .style("text-anchor", function(d) {
             return d.children ? "end" : "start"; })
           .text(function(d) {
@@ -115,6 +117,15 @@ class Tree {
      */
     updateTree(row) {
         // ******* TODO: PART VII *******
+        if (!row) return;
+
+        d3.selectAll("text#" + row.key).each(function () {
+            d3.select(this).attr("class", "selectedLabel")
+        })
+
+        d3.selectAll("path#" + row.key).each(function () {
+            d3.select(this).attr("class", "selected")
+        })
 
     }
 
@@ -123,7 +134,10 @@ class Tree {
      */
     clearTree() {
         // ******* TODO: PART VII *******
-
+        d3.selectAll("path.selected")
+            .attr("class", "link")
+        d3.selectAll("text.selectedLabel")
+            .attr("class", "")
         // You only need two lines of code for this! No loops!
     }
 }

@@ -38,7 +38,7 @@ class Table {
             height: 25,
             marginRight: 10,
             marginLeft: 10,
-            width: 170
+            width: 130
         };
 
         /** Used for games/wins/losses*/
@@ -46,7 +46,7 @@ class Table {
             height: this.goalScale.height,
             marginRight: 10,
             marginLeft: 0,
-            width: 70
+            width: 50
         };
 
         /**Color scales*/
@@ -221,6 +221,7 @@ class Table {
             .attr("align", "right")
             .attr("nowrap", true)
             .attr("id", d => d.key)
+            .style("width", this.gameScale.width + this.gameScale.marginLeft + this.gameScale.marginRight + "px")
 
         rows.each(function(d) {
             d3.select("#" + d3.select(this).attr("id")).selectAll("td")
@@ -359,6 +360,11 @@ class Table {
                 })
                 .attr("y", 16);
         })
+
+        d3.select("tbody")
+          .selectAll("tr")
+          .on("mouseover", window.tree.updateTree)
+          .on("mouseout", window.tree.clearTree)
 
     };
 
