@@ -7,3 +7,5 @@
 ### 3-я лаборатрная, часть 1 - ./hm3 ; url - https://larsan12.github.io/hm3/
 
 ### 3-я лабораторная, часть 2 - ./hw3-project-2 ; url - https://larsan12.github.io/hw3-project-2/
+
+### 4-я лабораторная, часть 1 - ./hw4-part1 ; url - https://larsan12.github.io/hw4-part1/
