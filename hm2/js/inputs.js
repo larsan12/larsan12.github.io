@@ -68,7 +68,11 @@ function changeYear() {
         top_partners: undefined
     }))
     data = filteredData;
-    dataSelected = data.filter(country => dataSelected.find(d => d.name == country.name));
+    if (dataSelected.length == 5) {
+        dataSelected = agregateData("continent")
+    } else {
+        dataSelected = data.filter(country => dataSelected.find(d => d.name == country.name));
+    }
     dropTable()
     drawTable(dataSelected)
     changeRadio()

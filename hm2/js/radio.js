@@ -26,30 +26,33 @@ function drawRadio() {
             drawTable(dataSelected)
         } else {
             clearInputs();
-            dataSelected = d3.nest()
-              .key(d => d[property])
-              .rollup(rows => {
-                  let group = {}
-                  Object.keys(rows[0]).forEach(prop => {
-                      if (folded_fields.indexOf(prop) != -1) {
-                          group[prop] = d3.mean(rows, r => r[prop])
-                      } else if (average_fields.indexOf(prop) != -1) {
-                          group[prop] = d3.mean(rows, r => r[prop] * r["population"])/d3.mean(rows, r => r["population"])
-                      } else if (constant_fields.indexOf(prop) != -1) {
-                          group[prop] = rows[0][prop]
-                      } else {
-                          group[prop] = rows[0][property]
-                      }
-                  })
-                  return group
-              })
-              .entries(data)
-              .map(obj => obj.values)
-
-              dropTable()
-              drawTable(dataSelected)
+            dataSelected = agregateData(property);
+            dropTable()
+            drawTable(dataSelected)
       }
     }
+}
+
+function agregateData(property) {
+    return d3.nest()
+      .key(d => d[property])
+      .rollup(rows => {
+          let group = {}
+          Object.keys(rows[0]).forEach(prop => {
+              if (folded_fields.indexOf(prop) != -1) {
+                  group[prop] = d3.mean(rows, r => r[prop])
+              } else if (average_fields.indexOf(prop) != -1) {
+                  group[prop] = d3.mean(rows, r => r[prop] * r["population"])/d3.mean(rows, r => r["population"])
+              } else if (constant_fields.indexOf(prop) != -1) {
+                  group[prop] = rows[0][prop]
+              } else {
+                  group[prop] = rows[0][property]
+              }
+          })
+          return group
+      })
+      .entries(data)
+      .map(obj => obj.values)
 }
 
 function clearRadio() {
