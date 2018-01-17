@@ -232,10 +232,10 @@ function drawChooseProp() {
 
         if (property) {
             encodeProp = property
-            clearRadio();
-            clearInputs();
+            //clearRadio();
+            //clearInputs();
             dropTable();
-            drawTable(data)
+            drawTable(dataSelected)
       }
     }
 

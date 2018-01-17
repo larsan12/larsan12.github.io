@@ -26,7 +26,7 @@ function drawRadio() {
             drawTable(dataSelected)
         } else {
             clearInputs();
-            var aggregation = d3.nest()
+            dataSelected = d3.nest()
               .key(d => d[property])
               .rollup(rows => {
                   let group = {}
@@ -47,9 +47,8 @@ function drawRadio() {
               .map(obj => obj.values)
 
               dropTable()
-              drawTable(aggregation)
+              drawTable(dataSelected)
       }
-
     }
 }
 
