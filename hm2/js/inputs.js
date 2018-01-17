@@ -39,19 +39,25 @@ function clearInputs() {
 
 
 //SLIDER
-let drawSlider = () => d3.select("div.conditions")
-.append("div")
-.attr("class", "slider")
-.append("label")
-.text(d => "Time update: ")
-.append("input")
-.attr("type", "range")
-.attr("class", "points")
-.attr("min", 1995)
-.attr("max", 2012)
-.attr("step", 1)
-.attr("value", 2012)
-.attr("oninput", "changeYear()")
+let drawSlider = () =>{
+    d3.select("div.conditions")
+        .append("div")
+        .attr("class", "slider")
+        .append("label")
+        .text(d => "Time update: 1995 ")
+        .attr("class", "slider-label")
+        .append("input")
+        .attr("type", "range")
+        .attr("class", "points")
+        .attr("min", 1995)
+        .attr("max", 2012)
+        .attr("step", 1)
+        .attr("value", 2012)
+        .attr("oninput", "changeYear()")
+    d3.select("label.slider-label")
+        .append("span")
+        .text(d => " 2012")
+}
 
 function changeYear() {
     let value = d3.select("input.points").property("value");

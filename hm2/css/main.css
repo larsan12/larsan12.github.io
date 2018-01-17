@@ -1,0 +1,15 @@
+.conditions div, div.prop, div.sort-chart {
+    border: 1px dotted blue;
+    height: 20px;
+    margin: 4px;
+    padding: 4px;
+    width: 900px;
+}
+
+div.slider {
+    padding-bottom: 17px;
+}
+
+input.points {
+    margin: 0 10px;
+}
