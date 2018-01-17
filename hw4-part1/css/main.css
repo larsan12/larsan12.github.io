@@ -1,0 +1,19 @@
+label.layouts label {
+    border: 1px dotted #DCDCDC;
+    margin: 0 5px;
+}
+
+.link {
+  stroke: gray;
+  stroke-width: .8px;
+}
+
+.node {
+  fill: white;
+  stroke: #000;
+  stroke-width: .9px;
+}
+
+.node:hover {
+  fill: black;
+}
